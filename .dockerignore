@@ -1,0 +1,9 @@
+.git
+.codegraph
+docs
+devlog
+artifacts
+.venv
+**/__pycache__
+**/*.pyc
+app/models/storage
