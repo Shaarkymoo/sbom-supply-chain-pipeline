@@ -17,7 +17,7 @@ step "1/3 Verify signature (Rekor-backed)"
 cosign verify --certificate-identity "$CERT_IDENTITY" --certificate-oidc-issuer "$CERT_ISSUER" "$IMAGE"
 
 step "2/3 Verify SLSA attestation"
-cosign verify-attestation --type slsaprovenance \
+cosign verify-attestation --type slsaprovenance1 \
   --certificate-identity "$CERT_IDENTITY" --certificate-oidc-issuer "$CERT_ISSUER" "$IMAGE"
 
 step "3/3 Deploy (only signed + attested images reach runtime)"

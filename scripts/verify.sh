@@ -13,7 +13,7 @@ echo "== Signature (cosign, Rekor) =="
 cosign verify --certificate-identity "$CERT_IDENTITY" --certificate-oidc-issuer "$CERT_ISSUER" "$IMAGE"
 
 echo "== SLSA attestation =="
-cosign verify-attestation --type slsaprovenance \
+cosign verify-attestation --type slsaprovenance1 \
   --certificate-identity "$CERT_IDENTITY" --certificate-oidc-issuer "$CERT_ISSUER" "$IMAGE"
 
 echo "== Vulnerabilities (CRITICAL/HIGH) =="

@@ -38,26 +38,22 @@ else
   cosign sign --yes "$IMAGE"
 
   step "8/8 SLSA attestation (cosign attest, SLSA v1 predicate)"
-  DIGEST="$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE" | cut -d@ -f2)"
+  # cosign attest expects the BARE predicate (no in-toto statement wrapper) —
+  # it wraps the statement itself. See sigstore/cosign#3757.
   cat > "$ART/slsa-provenance.json" <<EOF
 {
-  "_type": "https://in-toto.io/Statement/v1",
-  "predicateType": "https://slsa.dev/provenance/v1",
-  "subject": [{"name": "$IMAGE", "digest": {"sha256": "${DIGEST#sha256:}"}}],
-  "predicate": {
-    "buildDefinition": {
-      "buildType": "https://github.com/Shaarkymoo/sbom-supply-chain-pipeline/local-pipeline/v1",
-      "externalParameters": {},
-      "internalParameters": {"script": "scripts/pipeline-local.sh"}
-    },
-    "runDetails": {
-      "builder": {"id": "local"},
-      "metadata": {"invocationId": "$(date -u +%Y%m%dT%H%M%SZ)"}
-    }
+  "buildDefinition": {
+    "buildType": "https://github.com/Shaarkymoo/sbom-supply-chain-pipeline/local-pipeline/v1",
+    "externalParameters": {},
+    "internalParameters": {"script": "scripts/pipeline-local.sh"}
+  },
+  "runDetails": {
+    "builder": {"id": "local"},
+    "metadata": {"invocationId": "$(date -u +%Y%m%dT%H%M%SZ)"}
   }
 }
 EOF
-  cosign attest --yes --predicate "$ART/slsa-provenance.json" --type slsaprovenance "$IMAGE"
+  cosign attest --yes --predicate "$ART/slsa-provenance.json" --type slsaprovenance1 "$IMAGE"
 fi
 
 step "PIPELINE GREEN"
