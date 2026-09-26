@@ -28,6 +28,16 @@ test_forbidden_license_denied {
 	msg == "component evil-tool uses forbidden license AGPL-3.0-only"
 }
 
+test_license_name_accepted {
+	# Syft emits some licenses as free-text `name` (e.g. LGPLv3) — must pass rule 1.
+	no_violations(name_only_license_sbom)
+}
+
+test_forbidden_license_by_name_denied {
+	some msg in deny with input as agpl_by_name_sbom
+	contains(msg, "component evil-by-name uses forbidden license")
+}
+
 no_violations(sbom) {
 	count(deny) == 0 with input as sbom
 }
@@ -94,6 +104,36 @@ agpl_sbom := {
 			"name": "evil-tool",
 			"purl": "pkg:pypi/evil-tool@1.0",
 			"licenses": [{"license": {"id": "AGPL-3.0-only"}}],
+		},
+	],
+}
+
+name_only_license_sbom := {
+	"components": [
+		{
+			"type": "library",
+			"name": "autocommand",
+			"purl": "pkg:pypi/autocommand@2.2.2",
+			"licenses": [{"license": {"name": "LGPLv3"}}],
+		},
+		{
+			"type": "model",
+			"name": "registry-demo-tiny",
+			"properties": [
+				{"name": "cdx:model:sha256", "value": "abc"},
+				{"name": "cdx:model:source_url", "value": "https://example.com/model"},
+			],
+		},
+	],
+}
+
+agpl_by_name_sbom := {
+	"components": [
+		{
+			"type": "library",
+			"name": "evil-by-name",
+			"purl": "pkg:pypi/evil-by-name@1.0",
+			"licenses": [{"license": {"name": "AGPLv3"}}],
 		},
 	],
 }

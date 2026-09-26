@@ -6,7 +6,11 @@ import future.keywords.in
 # and a deny-list of licenses this project forbids.
 forbidden_licenses := {"AGPL-3.0-only", "AGPL-3.0-or-later", "BUSL-1.1", "Elastic-2.0"}
 
-# 1. Language-package components must declare an SPDX license.
+# Syft sometimes records a license as free-text `name` (e.g. "LGPLv3") instead
+# of an SPDX `id`. Match forbidden licenses by either form, on normalized names.
+forbidden_name_fragments := ["agpl", "busl", "elastic license", "sspl"]
+
+# 1. Language-package components must declare a license (SPDX id, expression, or name).
 deny[msg] {
 	comp := input.components[_]
 	startswith(comp.purl, "pkg:pypi/")
@@ -22,12 +26,25 @@ has_declared_license(comp) {
 	comp.licenses[_].expression
 }
 
-# 2. No component may use a forbidden license.
+has_declared_license(comp) {
+	comp.licenses[_].license.name
+}
+
+# 2. No component may use a forbidden license (matched by SPDX id...).
 deny[msg] {
 	comp := input.components[_]
 	lic := comp.licenses[_].license.id
 	forbidden_licenses[lic]
 	msg := sprintf("component %s uses forbidden license %s", [comp.name, lic])
+}
+
+# ...or by normalized free-text name.
+deny[msg] {
+	comp := input.components[_]
+	lic := lower(comp.licenses[_].license.name)
+	fragment := forbidden_name_fragments[_]
+	contains(lic, fragment)
+	msg := sprintf("component %s uses forbidden license %s", [comp.name, comp.licenses[_].license.name])
 }
 
 # 3. AIBOM: at least one model component must exist.

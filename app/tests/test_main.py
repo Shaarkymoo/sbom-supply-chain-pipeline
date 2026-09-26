@@ -10,5 +10,7 @@ def test_health() -> None:
 
 
 def test_routes_mounted() -> None:
-    assert any(getattr(r, "path", None) == "/models" for r in app.routes)
-    assert any(getattr(r, "path", None) == "/chat" for r in app.routes)
+    paths = set(app.openapi()["paths"].keys())
+    assert "/models" in paths
+    assert "/models/upload" in paths
+    assert "/chat" in paths
