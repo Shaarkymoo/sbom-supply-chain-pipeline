@@ -1,0 +1,43 @@
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.tuf
+cosign.key
+cosign.pub
+
+# Local build artifacts
+dist/
+build/
+*.tar
+*.tgz
+*.log
+
+# Local image / scan caches
+trivy-cache/
+.syft/
+node_modules/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Internal planning / working artifacts (never part of public history)
+docs/superpowers/
+devlog/
+artifacts/
+
+# Uploaded models (runtime data)
+app/models/storage/
+
+# Codegraph index
+.codegraph/
