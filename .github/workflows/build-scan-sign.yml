@@ -18,7 +18,7 @@ jobs:
 
       - name: Quality gates (public rulesets)
         run: |
-          pip install -q -r requirements-dev.txt
+          pip install -q -r requirements.txt -r requirements-dev.txt
           ruff check app scripts
           ruff format --check app scripts
           mypy app
