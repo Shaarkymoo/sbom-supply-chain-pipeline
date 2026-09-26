@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.registry import MODEL_DIR, router
+from app.registry import router
 
 
 def _client() -> TestClient:
@@ -10,14 +10,15 @@ def _client() -> TestClient:
     return TestClient(app)
 
 
-def test_list_models_empty_initially():
+def test_list_models_empty_initially() -> None:
     client = _client()
     assert client.get("/models").json() == []
 
 
-def test_upload_accepts_any_file_without_verification():
+def test_upload_accepts_any_file_without_verification() -> None:
     client = _client()
-    res = client.post("/models/upload", files={"file": ("poisoned.bin", b"\x00\x01model", "application/octet-stream")})
+    files = {"file": ("poisoned.bin", b"\x00\x01model", "application/octet-stream")}
+    res = client.post("/models/upload", files=files)
     assert res.status_code == 200
     rec = res.json()
     assert rec["name"] == "poisoned.bin"
@@ -25,7 +26,7 @@ def test_upload_accepts_any_file_without_verification():
     assert client.get("/models").json()  # now listed
 
 
-def test_fetch_documents_ssrf_behavior():
+def test_fetch_documents_ssrf_behavior() -> None:
     # A local HTTP server is the SSRF target: the registry fetches an internal
     # URL the client controls, with no scheme/host allowlist (documented vuln).
     import threading
@@ -34,7 +35,7 @@ def test_fetch_documents_ssrf_behavior():
     captured = {}
 
     class Handler(BaseHTTPRequestHandler):
-        def do_GET(self):
+        def do_GET(self) -> None:
             captured["path"] = self.path
             self.send_response(200)
             self.end_headers()
@@ -58,7 +59,7 @@ def test_fetch_documents_ssrf_behavior():
         server.shutdown()
 
 
-def test_serve_documents_path_traversal_behavior():
+def test_serve_documents_path_traversal_behavior() -> None:
     client = _client()
     # traversal-style id (documented vuln surface)
     res = client.get("/models/..%2F..%2Fetc%2Fpasswd/serve")

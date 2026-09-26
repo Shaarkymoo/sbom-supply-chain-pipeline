@@ -37,6 +37,6 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("")
-def chat(req: ChatRequest) -> dict:
+def chat(req: ChatRequest) -> dict[str, str]:
     response = _respond(req.message)
     return {"response": response, "verdict": evaluate_simple(response)}

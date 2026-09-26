@@ -4,6 +4,7 @@ import hashlib
 import json
 import uuid
 from pathlib import Path
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
@@ -13,14 +14,15 @@ MODEL_DIR = Path(__file__).parent / "models" / "storage"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _load_index() -> dict:
+def _load_index() -> dict[str, Any]:
     index_file = MODEL_DIR / "index.json"
     if index_file.exists():
-        return json.loads(index_file.read_text())
+        data = json.loads(index_file.read_text())
+        return data if isinstance(data, dict) else {}
     return {}
 
 
-def _save_index(index: dict) -> None:
+def _save_index(index: dict[str, Any]) -> None:
     (MODEL_DIR / "index.json").write_text(json.dumps(index, indent=2))
 
 
@@ -62,7 +64,7 @@ async def upload_model(file: UploadFile = File(...)) -> ModelRecord:
 
 
 @router.post("/fetch")
-def fetch_model(req: FetchRequest) -> dict:
+def fetch_model(req: FetchRequest) -> dict[str, Any]:
     """VULNERABILITY: SSRF — fetches any user-supplied URL with no scheme/host allowlist."""
     resp = httpx.get(req.url, timeout=10.0, follow_redirects=True)
     record_id = uuid.uuid4().hex[:12]
@@ -80,7 +82,7 @@ def fetch_model(req: FetchRequest) -> dict:
 
 
 @router.get("/{model_id}/serve")
-def serve_model(model_id: str) -> dict:
+def serve_model(model_id: str) -> dict[str, Any]:
     """VULNERABILITY: path traversal — model_id is interpolated into the path unchecked."""
     path = MODEL_DIR / model_id
     if not path.is_file():

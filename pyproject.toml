@@ -5,6 +5,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.File"]
+
 [tool.mypy]
 strict = true
 python_version = "3.12"

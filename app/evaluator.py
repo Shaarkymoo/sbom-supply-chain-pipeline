@@ -2,6 +2,7 @@
 
 import json
 import re
+from typing import Any
 
 RISKY_KEYWORDS = [
     "system prompt",
@@ -37,7 +38,7 @@ Response to evaluate:
 """
 
 
-def parse_verdict(text: str) -> dict:
+def parse_verdict(text: str) -> dict[str, Any]:
     """Tolerant JSON parse of a judge verdict."""
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
