@@ -20,8 +20,8 @@ python "$REPO_ROOT/scripts/build_aibom.py" \
   --manifest "$REPO_ROOT/app/models/manifest.json" \
   --output "$ART/sbom-aibom.cdx.json"
 
-step "4/8 Trivy scan (CVSS CRITICAL/HIGH gate; --ignore-unfixed = fail on fixable findings, baseline no-fix base-image CVEs)"
-trivy image --exit-code 1 --ignore-unfixed --severity CRITICAL,HIGH --format json --output "$ART/trivy.json" "$IMAGE"
+step "4/8 Trivy scan (CVSS CRITICAL/HIGH gate; .trivyignore = explicit baseline for no-fix base-image CVEs)"
+trivy image --exit-code 1 --severity CRITICAL,HIGH --ignorefile "$REPO_ROOT/.trivyignore" --format json --output "$ART/trivy.json" "$IMAGE"
 
 step "5/8 CISA KEV gate"
 python "$REPO_ROOT/scripts/kev-gate.py" "$ART/trivy.json"

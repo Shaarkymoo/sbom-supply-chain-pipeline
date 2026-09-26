@@ -67,7 +67,6 @@ jobs:
           output: trivy.json
           exit-code: "1"
           severity: CRITICAL,HIGH
-          ignore-unfixed: "true"
 
       - name: CISA KEV gate
         run: python scripts/kev-gate.py trivy.json

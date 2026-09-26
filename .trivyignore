@@ -1,0 +1,23 @@
+# Trivy baseline: CVEs with NO upstream fix yet, inherited from the
+# python:3.12-slim (Debian 13) base image. I consciously accept these so the
+# gate fails on ACTIONABLE findings only. The CISA KEV gate (scripts/kev-gate.py)
+# still fails the build if any of these is ever added to the actively-exploited
+# catalog. Revisit on every base-image upgrade.
+
+# ncurses: buffer overflow in form library — no fix available in Debian 13
+CVE-2025-69720
+
+# systemd-homed: local privilege escalation — no fix available yet
+CVE-2026-16742
+
+# acl: symlink traversal privilege escalation — no fix available yet
+CVE-2026-54369
+
+# util-linux: mount/nsenter/bind-mount hardening (4 CVEs) — no fixes available yet
+CVE-2026-76642
+CVE-2026-78408
+CVE-2026-78409
+CVE-2026-78410
+
+# perl Archive-Tar: DoS via crafted tar header — no fix available yet
+CVE-2026-9538
