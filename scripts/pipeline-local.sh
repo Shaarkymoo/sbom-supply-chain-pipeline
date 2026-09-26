@@ -32,6 +32,8 @@ conftest test "$ART/sbom-aibom.cdx.json" -p "$REPO_ROOT/policy"
 if [[ "${SKIP_SIGN:-0}" == "1" ]]; then
   step "7-8/8 SKIPPED (SKIP_SIGN=1) - keyless signing/attestation is interactive"
 else
+  # cosign signs/verifies against a registry-hosted image. For local dev, push
+  # first: docker tag <local-image> localhost:5000/<image>:dev && docker push ...
   step "7/8 Keyless sign (cosign, personal OIDC -> Rekor)"
   cosign sign --yes "$IMAGE"
 
