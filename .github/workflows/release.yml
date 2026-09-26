@@ -1,0 +1,24 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.14.0
+      - name: Generate SBOM + AIBOM
+        run: |
+          syft dir:. -o cyclonedx-json > sbom.cdx.json
+          python scripts/build_aibom.py --sbom sbom.cdx.json --manifest app/models/manifest.json --output sbom-aibom.cdx.json
+      - name: Attach to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" sbom.cdx.json sbom-aibom.cdx.json --clobber
