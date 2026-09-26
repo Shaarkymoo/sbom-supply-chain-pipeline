@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Third-party audit: verify signature, attestation, and vulnerabilities.
 set -euo pipefail
-IMAGE="${1:-ghcr.io/Shaarkymoo/ai-model-registry:dev}"
+IMAGE="${1:-${IMAGE:-ghcr.io/shaarkymoo/ai-model-registry:dev}}"
 
 # Keyless verification identity. Defaults match the GitHub Actions workflow
 # identity (repo signed on push). For local personal-OIDC signing, override:

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE="${IMAGE:-ghcr.io/Shaarkymoo/ai-model-registry:dev}"
+IMAGE="${IMAGE:-ghcr.io/shaarkymoo/ai-model-registry:dev}"
 ART="$REPO_ROOT/artifacts"
 mkdir -p "$ART" "$REPO_ROOT/devlog"
 

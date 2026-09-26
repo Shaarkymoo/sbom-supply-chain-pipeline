@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${IMAGE:-ghcr.io/Shaarkymoo/ai-model-registry:dev}"
+IMAGE="${IMAGE:-ghcr.io/shaarkymoo/ai-model-registry:dev}"
 PORT="${PORT:-8000}"
 CONTAINER="${CONTAINER:-ai-model-registry}"
 
