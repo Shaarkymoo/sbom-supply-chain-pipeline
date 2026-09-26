@@ -8,7 +8,10 @@ KEV_REPORT = {
         {
             "Target": "python:3.12-slim (debian:12)",
             "Vulnerabilities": [
-                {"VulnerabilityID": "CVE-2024-0001", "CISAKEV": {"KnownRansomwareCampaignUse": "Known"}},
+                {
+                    "VulnerabilityID": "CVE-2024-0001",
+                    "CISAKEV": {"KnownRansomwareCampaignUse": "Known"},
+                },
                 {"VulnerabilityID": "CVE-2024-0002"},
             ],
         }
@@ -17,7 +20,10 @@ KEV_REPORT = {
 
 CLEAN_REPORT = {
     "Results": [
-        {"Target": "python:3.12-slim (debian:12)", "Vulnerabilities": [{"VulnerabilityID": "CVE-2024-0002"}]}
+        {
+            "Target": "python:3.12-slim (debian:12)",
+            "Vulnerabilities": [{"VulnerabilityID": "CVE-2024-0002"}],
+        }
     ]
 }
 
@@ -25,7 +31,9 @@ CLEAN_REPORT = {
 def _run(report: dict) -> subprocess.CompletedProcess:
     p = Path("/tmp/trivy-test.json")
     p.write_text(json.dumps(report))
-    return subprocess.run([sys.executable, "scripts/kev-gate.py", str(p)], capture_output=True, text=True)
+    return subprocess.run(
+        [sys.executable, "scripts/kev-gate.py", str(p)], capture_output=True, text=True
+    )
 
 
 def test_kev_gate_fails_on_kev_vulnerability() -> None:

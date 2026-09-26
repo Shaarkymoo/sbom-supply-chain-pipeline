@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.build_aibom import load_manifest, model_component, merge
+from scripts.build_aibom import load_manifest, merge, model_component
 
 FIXTURE_SBOM = {
     "bomFormat": "CycloneDX",
@@ -11,7 +11,10 @@ FIXTURE_SBOM = {
 
 
 def test_load_manifest_requires_license() -> None:
-    bad = {"model": {"name": "m", "version": "1", "framework": "f"}, "artifact": {"source_url": "u"}}
+    bad = {
+        "model": {"name": "m", "version": "1", "framework": "f"},
+        "artifact": {"source_url": "u"},
+    }
     p = Path("/tmp/bad-manifest.json")
     p.write_text(json.dumps(bad))
     try:
