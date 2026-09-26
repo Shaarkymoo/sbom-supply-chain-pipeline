@@ -1,0 +1,16 @@
+{
+  "model": {
+    "name": "registry-demo-tiny",
+    "version": "1.0.0",
+    "framework": "demo-inference",
+    "license": "MIT"
+  },
+  "artifact": {
+    "sha256": "",
+    "source_url": "https://github.com/<username>/sbom-supply-chain-pipeline/tree/main/app/models",
+    "file": "tiny-model.json"
+  },
+  "datasets": [
+    {"name": "attacks", "file": "attacks.json", "sha256": ""}
+  ]
+}

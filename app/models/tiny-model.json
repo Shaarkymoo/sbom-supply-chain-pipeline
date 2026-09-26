@@ -1,0 +1,10 @@
+{
+  "name": "registry-demo-tiny",
+  "version": "1.0.0",
+  "framework": "demo-inference",
+  "description": "Deterministic demo responder backing the chat endpoint. Not a real LLM.",
+  "behaviors": {
+    "leak_on": ["ignore all previous", "system prompt", "reveal your"],
+    "canned_reply_prefix": "Thanks. I can help with model registry operations."
+  }
+}
