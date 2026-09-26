@@ -1,0 +1,41 @@
+name: slsa-generator
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-sbom:
+    runs-on: ubuntu-latest
+    outputs:
+      subjects: ${{ steps.hash.outputs.subjects }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.14.0
+      - name: Generate SBOM
+        run: syft dir:. -o cyclonedx-json > sbom.cdx.json
+      - name: AIBOM merge
+        run: python scripts/build_aibom.py --sbom sbom.cdx.json --manifest app/models/manifest.json --output sbom-aibom.cdx.json
+      - name: Hash subject
+        id: hash
+        run: echo "subjects=$(sha256sum sbom-aibom.cdx.json | awk '{print \"sha256:\"$1}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom-aibom
+          path: sbom-aibom.cdx.json
+
+  provenance:
+    needs: build-sbom
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: "${{ needs.build-sbom.outputs.subjects }}"
