@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE="${IMAGE:-ghcr.io/<username>/ai-model-registry:dev}"
+IMAGE="${IMAGE:-ghcr.io/Shaarkymoo/ai-model-registry:dev}"
 ART="$REPO_ROOT/artifacts"
 mkdir -p "$ART" "$REPO_ROOT/devlog"
 
@@ -46,7 +46,7 @@ else
   "subject": [{"name": "$IMAGE", "digest": {"sha256": "${DIGEST#sha256:}"}}],
   "predicate": {
     "buildDefinition": {
-      "buildType": "https://github.com/<username>/sbom-supply-chain-pipeline/local-pipeline/v1",
+      "buildType": "https://github.com/Shaarkymoo/sbom-supply-chain-pipeline/local-pipeline/v1",
       "externalParameters": {},
       "internalParameters": {"script": "scripts/pipeline-local.sh"}
     },
