@@ -1,0 +1,95 @@
+name: build-scan-sign
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+jobs:
+  build-scan-sign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Quality gates (public rulesets)
+        run: |
+          pip install -q -r requirements-dev.txt
+          ruff check app scripts
+          ruff format --check app scripts
+          mypy app
+          bandit -c bandit.yaml -r app -q
+          curl -sSfL https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
+          chmod +x /usr/local/bin/hadolint
+          hadolint app/Dockerfile
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: app/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate SBOM (Syft, CycloneDX)
+        uses: anchore/sbom-action@v0.24.2
+        with:
+          image: ghcr.io/${{ github.repository }}:latest
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+
+      - name: AIBOM merge
+        run: python scripts/build_aibom.py --sbom sbom.cdx.json --manifest app/models/manifest.json --output sbom-aibom.cdx.json
+
+      - name: Trivy scan (CVSS CRITICAL/HIGH gate; fail on fixable)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:latest
+          format: json
+          output: trivy.json
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: "true"
+
+      - name: CISA KEV gate
+        run: python scripts/kev-gate.py trivy.json
+
+      - name: Policy gate (Conftest)
+        run: |
+          curl -sSfL https://github.com/open-policy-agent/conftest/releases/download/v0.55.0/conftest_0.55.0_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin conftest
+          conftest test sbom-aibom.cdx.json -p policy/
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4
+
+      - name: Keyless sign (GitHub OIDC)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: cosign sign --yes ghcr.io/${{ github.repository }}:latest
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-aibom
+          path: |
+            sbom.cdx.json
+            sbom-aibom.cdx.json
+            trivy.json
