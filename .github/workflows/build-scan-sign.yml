@@ -32,6 +32,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # GitHub doesn't lowercase ${{ github.repository }}, and OCI image names
+      # must be lowercase (the repo owner has uppercase letters).
+      - name: Compute lowercase image ref
+        id: img
+        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> "$GITHUB_OUTPUT"
+
       - name: Login to GHCR
         uses: docker/login-action@v4
         with:
@@ -50,14 +56,14 @@ jobs:
           context: .
           file: app/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ steps.img.outputs.image }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Generate SBOM (Syft, CycloneDX)
         uses: anchore/sbom-action@v0.24.2
         with:
-          image: ghcr.io/${{ github.repository }}:latest
+          image: ${{ steps.img.outputs.image }}
           format: cyclonedx-json
           output-file: sbom.cdx.json
 
@@ -67,7 +73,7 @@ jobs:
       - name: Trivy scan (CVSS CRITICAL/HIGH gate; fail on fixable)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/${{ github.repository }}:latest
+          image-ref: ${{ steps.img.outputs.image }}
           format: json
           output: trivy.json
           exit-code: "1"
@@ -87,7 +93,7 @@ jobs:
       - name: Keyless sign (GitHub OIDC)
         env:
           COSIGN_EXPERIMENTAL: "1"
-        run: cosign sign --yes ghcr.io/${{ github.repository }}:latest
+        run: cosign sign --yes ${{ steps.img.outputs.image }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
